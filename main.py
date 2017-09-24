@@ -12,28 +12,29 @@ epoch_number = 501
 display_step = 100
 learning_rate = 0.001
 
+# Just generate random data, and normalize the vectors for future use
 X = np.random.randint(input_max, size=(input_length, input_dim)) * 1.0 / (input_max * input_dim)
 Y = np.sum(X, axis=1)
 
-print X
-print Y
-
 inputs = tf.placeholder(tf.float32, shape=[1, input_dim], name="inputs")
 target = tf.placeholder(tf.float32, shape=[1], name="target")
-
 weights = tf.random_normal([output_dim, hidden_dim])
 bias = tf.random_normal([output_dim])
 
+# Note: you can use any BasicRRN cell, GRU, LSTM... 
 lstm = tf.nn.rnn_cell.BasicLSTMCell(hidden_dim)
 state = lstm.zero_state(1, tf.float32)
 
+# Forward pass with non-linear activation
 h, state = lstm(inputs, state)
 Wo_s = tf.matmul(weights, tf.reshape(h, (hidden_dim, 1)))
 Wo_s = tf.add(bias, Wo_s, name = 'Wo_s')
-
 output = output_activation(Wo_s, name = 'output')
+
 errors = output - target
 loss = tf.reduce_mean(errors, name = 'loss')
+
+# Some other optimizers like RMSProp might be better
 optimizer = tf.train.GradientDescentOptimizer(learning_rate = learning_rate)
 train_op = optimizer.minimize(loss)
 
